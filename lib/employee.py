@@ -2,6 +2,7 @@
 from __init__ import CURSOR, CONN
 from department import Department
 
+
 class Employee:
 
     # Dictionary of objects saved to the database.
@@ -57,6 +58,7 @@ class Employee:
             raise ValueError(
                 "department_id must reference a department in the database")
 
+    
     @classmethod
     def create_table(cls):
         """ Create a new table to persist the attributes of Employee instances """
@@ -148,6 +150,7 @@ class Employee:
             employee.id = row[0]
             cls.all[employee.id] = employee
         return employee
+    
 
     @classmethod
     def get_all(cls):
@@ -179,7 +182,7 @@ class Employee:
         sql = """
             SELECT *
             FROM employees
-            WHERE name is ?
+            WHERE name = ?
         """
 
         row = CURSOR.execute(sql, (name,)).fetchone()
@@ -187,4 +190,14 @@ class Employee:
 
     def reviews(self):
         """Return list of reviews associated with current employee"""
-        pass
+        from review import Review
+        # Import Review class here to avoid circular import error
+        sql = """
+            SELECT *
+            FROM reviews
+            WHERE employee_id = ?
+        """
+
+        CURSOR.execute(sql, (self.id,))
+        rows = CURSOR.fetchall()
+        return [Review.instance_from_db(row) for row in rows]
